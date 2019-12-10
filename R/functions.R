@@ -122,14 +122,14 @@ create_market_vectors <- function(data, test_market, ref_market){
     ref <- subset(d, id_var == ref_market[1])[,c("date_var", "match_var")]
     names(ref)[2] <- "x1"
     f <- dplyr::inner_join(test, ref, by="date_var")
-    return(list(as.numeric(f$y), as.numeric(f$x1), as.Date(f$date_var)))
+    return(list(as.numeric(f$y), as.numeric(f$x1), as.POSIXct(f$date_var)))
   } else if (length(ref_market)>1){
     d <- dplyr::distinct(d, id_var, date_var, .keep_all = TRUE)
     ref <- reshape2::dcast(subset(d, id_var %in% ref_market), date_var ~ id_var, value.var="match_var")
     names(ref) <- c("date_var", paste0("x", seq(1:length(ref_market))))
     f <- data.frame(dplyr::inner_join(test, ref, by="date_var"))
     f <- stats::na.omit(f)
-    return(list(as.numeric(f$y), dplyr::select(f, num_range("x", 1:length(ref_market))), as.Date(f$date_var)))
+    return(list(as.numeric(f$y), dplyr::select(f, num_range("x", 1:length(ref_market))), as.POSIXct(f$date_var)))
   }
 }
 
@@ -495,8 +495,8 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
   cat("\n")
 
   ## run the inference
-  pre.period <- c(as.Date(MatchingStartDate), as.Date(MatchingEndDate))
-  post.period <- c(as.Date(post_period_start_date), as.Date(post_period_end_date))
+  pre.period <- c(as.POSIXct(MatchingStartDate), as.POSIXct(MatchingEndDate))
+  post.period <- c(as.POSIXct(post_period_start_date), as.POSIXct(post_period_end_date))
   set.seed(2015)
   impact <- CausalImpact(ts, pre.period, post.period, alpha=alpha, model.args=bsts_modelargs)
 
